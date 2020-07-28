@@ -3,12 +3,14 @@ package transform
 import (
 	"fmt"
 	"reflect"
+	"strings"
 )
 
 type Flattener struct {
 	r        map[string]interface{}
 	sep      string
 	sliceSep string
+	prefix   string
 }
 
 // NewFlattener returns a new Flattener
@@ -19,6 +21,9 @@ func NewFlattener() *Flattener {
 		r:        make(map[string]interface{}),
 	}
 }
+
+// SetPrefix //
+func (f *Flattener) SetPrefix(prefix string) { f.prefix = prefix }
 
 // SetSeparator //
 func (f *Flattener) SetSeparator(sep string) { f.sep = sep }
@@ -35,7 +40,11 @@ func (f *Flattener) Flatten(in map[string]interface{}) (map[string]interface{}, 
 		if v.Kind() == reflect.Interface {
 			v = v.Elem()
 		}
-		err = f.flatten(prefix, v)
+		sb := strings.Builder{}
+		sb.WriteString(f.prefix)
+		sb.WriteString(f.sep)
+		sb.WriteString(prefix)
+		err = f.flatten(sb.String(), v)
 		if err != nil {
 			return nil, err
 		}
